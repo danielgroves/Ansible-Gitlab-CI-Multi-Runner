@@ -17,7 +17,7 @@ Vagrant.configure(2) do |config|
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = "gitlab-runner.yml"
     ansible.extra_vars = {
-      ci_auth_token: ""
+      ci_auth_token: "#{ENV['ANSIBLE_GITLAB_CI_RUNNER']}"
     }
   end
 end
