@@ -3,8 +3,6 @@
   become: true
   become_user: root
   become_method: sudo
-  vars:
-    build_limit: 2
   vars_prompt:
     - name: "ci_server"
       prompt: "What is the URL of the CI server?"
@@ -12,6 +10,16 @@
     - name: "ci_auth_token"
       prompt: "What is your CI auth token?"
       private: yes
+    - name: "runner_build_limit"
+      prompt: "How many builds can each runner do at any one time?"
+      default: 2
+    - name: "create_docker"
+      prompt: "Create a docker runner? (true|false)"
+      default: true
+    - name: "create_shell"
+      prompt: "Create a shelll runner? (true|false)"
+      default: true
+
   tasks:
     - name: Update apt
       apt: update_cache=yes upgrade=dist
@@ -25,5 +33,10 @@
     - name: Install Gitlab CI Multi runner
       apt: name=gitlab-ci-multi-runner state=latest update_cache=yes
 
-    - name: Register the runner
-      shell: gitlab-ci-multi-runner register --non-interactive --registration-token={{ ci_auth_token }} --url={{ ci_server }} --executor=docker --limit=2 --docker-image "gitlab/dind:latest"  --docker-privileged
+    - name: Register Docker in Docker runner
+      shell: gitlab-ci-multi-runner register --non-interactive --registration-token={{ ci_auth_token }} --url={{ ci_server }} --executor=docker --limit={{ runner_build_limit }} --docker-image="gitlab/dind:latest" --docker-privileged --description="Ansible Provisioned CI Docker in Docker Runner"
+      when: create_docker
+
+    - name: Register shell runner
+      shell: gitlab-ci-multi-runner register --non-interactive --registration-token={{ ci_auth_token }} --url={{ ci_server }} --executor=shell --limit={{ runner_build_limit }} --description="Ansible Provisioned CI Shell Runner"
+      when: create_shell
