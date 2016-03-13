@@ -1,5 +1,5 @@
 ---
-- hosts: build
+- hosts: all
   become: true
   become_user: root
   become_method: sudo
@@ -26,6 +26,12 @@
 
     - name: Install docker
       shell: curl -sSL https://get.docker.com/ | sh
+
+    - name: Install docker compose
+      shell: curl -L https://github.com/docker/compose/releases/download/1.6.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+
+    - name: Set docker compose permissions
+      file: path=/usr/local/bin/docker-compose mode="ugo+x"
 
     - name: Install Gitlab repository
       shell: curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.deb.sh | bash
